@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <link rel="stylesheet" href="public/css/reset.css">
+        <link rel="stylesheet" href="public/css/style.css">
+        
+        
+        <script src='public/js/jquery-2.1.4.min.js'></script>
+            
+        <script src='public/js/componente.js'></script>
+        <script src='public/js/componente2.js'></script>
+        
+   
+    </head>
+    <body >
+        
+        
+ 
+         
+    <input type="hidden" id="GrupoDondeEsta" name="GrupoDondeEsta" value="No"/> 
+    <input type="hidden" id="Interruptor" name="Interruptor" value="No"/> 
+    <input type="text" id="Nombre_Usuario" name="Nombre_Usuario" value="Miguel"/> 
+    <div class="container clearfix">
+        
+    <div class="people-list" id="people-list">
+        <ul class="list" >
+        
+       <li class="clearfix">
+          <img src="public/image/add.png" alt="avatar" />
+          <div class="about">
+            <div class="name">Agregar Grupo</div>
+            
+          </div>
+          <input type="text" id="Nombre_Canal"/>
+          <br/>
+          <br/>
+          <button >Guardar</button>
+        </li>
+
+        <h1>G R U P O S</h1>
+        <div id="GruposNuevo">
+            
+        </div>
+
+      </ul>
+    </div>
+    
+    <div class="chat">
+      <div class="chat-header clearfix">
+        
+        
+        <div class="chat-about">
+            <div class="chat-with" >
+                <div >
+                    
+                </div>
+         
+        </div>
+        <i class="fa fa-star"></i>
+      </div> 
+      
+      <div class="chat-history">
+        <ul id="mensajes">
+
+        </ul>
+        
+      </div> 
+      
+      <div class="chat-message clearfix">
+        <textarea name="message-to-send" id="message-to-send" placeholder ="Type your message" rows="3"></textarea>
+                
+        <i class="fa fa-file-o"></i> &nbsp;&nbsp;&nbsp;
+        <i class="fa fa-file-image-o"></i>
+        
+        <button>Send</button>
+
+      </div> 
+      
+    </div> 
+    
+  </div> 
+  
+  <script type="text/javascript">
+
+            var Int =document.getElementById("Interruptor");
+            var evtSource = new EventSource("http://localhost:8080/Practica/chat");
+            
+            function UniserAGrupo(nombre){
+                document.getElementById("Interruptor").value = "Si";
+                
+                
+                var message =document.getElementById("message-to-send");
+                var canal =document.getElementById("Nombre_Canal");
+                var user =document.getElementById("Nombre_Usuario");
+                var gr =document.getElementById("GrupoDondeEsta");
+                document.getElementById("GrupoDondeEsta").value = nombre;
+                
+                
+                var request = new XMLHttpRequest();
+                
+                request.addEventListener('load',function(){
+                    console.log('Mesage sent!');
+                   // document.getElementById('text').innerHTML += 'Hola, soy yo';
+                })
+                
+                request.open('POST','http://localhost:8080/Practica/chat',true);
+                request.setRequestHeader("Content-type","application/x-www-form-urlencoded; charset=utf-8");
+                request.send("text="+message.value+"&user="+user.value+"&crear="+canal.value+"&grupo="+gr.value+"&Inte="+Int.value);
+                
+                
+                
+                //var tem = document.getElementById("Nombre_vista");
+                //document.getElementById("Nombre_vista").value = nombre +'  :  '+tem.value ;
+                document.getElementById("Interruptor").value = "No";
+            }
+            
+            
+            
+            var message =document.getElementById("message-to-send");
+            var canal =document.getElementById("Nombre_Canal");
+            var user =document.getElementById("Nombre_Usuario");
+            var gr =document.getElementById("GrupoDondeEsta");
+            
+            
+            evtSource.onmessage = function(e){
+                var data= JSON.parse(e.data);
+                console.log(e);
+                console.log(data);
+                var f=new Date();
+                cad=f.getHours()+":"+f.getMinutes()+":"+f.getSeconds(); 
+               //document.getElementById('mensajes').innerHTML += data.user+":"+data.content+"\n\n";
+               
+               if(data.user!=user.value){
+                   document.getElementById('mensajes').innerHTML += "<li class=\"clearfix\">"+
+                                                                 "<div class=\"message-data align-right\">"+
+                                                                 "<span class=\"message-data-time\">"+cad+" , Today</span>"+
+                                                                 "<span class=\"message-data-name\"><i class=\"fa fa-circle online\"></i>"+data.user+"</span>"+
+                                                                 "</div>"+
+                                                                 "<div class=\"message other-message float-right\">"+
+                                                                 data.content+
+                                                                 "</div>"+
+                                                                 "</li>";
+               }else{
+                   document.getElementById('mensajes').innerHTML += "<li>"+
+                                                                 "<div class=\"message-data\">"+
+                                                                 "<span class=\"message-data-name\"><i class=\"fa fa-circle online\"></i>"+data.user+"</span>"+
+                                                                 "<span class=\"message-data-time\">"+cad+" , Today</span>"+
+                                                                 "</div>"+
+                                                                 "<div class=\"message my-message\">"+
+                                                                 data.content+
+                                                                 "</div>"+
+                                                                 "</li>";
+               }
+                
+                                                                 
+            }
+            
+            
+            evtSource.addEventListener('ping',function(e){  
+            
+            var bruto = String(e.data);
+            var lon = parseInt(bruto.length);
+            var cadena =  bruto.substr(30,lon );
+            
+            var patron="}";
+            cadena=cadena.replace(patron,'');
+            patron ="\"";
+            cadena=cadena.replace(patron,'');
+            patron ="]";
+            cadena=cadena.replace(patron,'');
+            
+            var arregloDeCadenas = cadena.split(",");
+            
+           var data= JSON.parse(e.data);
+           
+            //document.getElementById('GruposNuevo').innerHTML = "";
+            //for(var i=0; i<arregloDeCadenas.length; i++){
+            
+            document.getElementById('GruposNuevo').innerHTML += "<li class=\"clearfix\">"+
+                                                                 "<img src=\"public/image/CHAT.png\" alt=\"avatar\" />"+
+                                                                 "<div class=\"about\">"+
+                                                                 "<div class=\"name\">"+Recortar(arregloDeCadenas)+"</div>"+
+                                                                 "<div class=\"status\">"+
+                                                                 "<i class=\"fa fa-circle online\"></i> <button onclick=\"UniserAGrupo(' " +Recortar(arregloDeCadenas)+" ')\">Unirse</button>"+
+                                                                 "</div>"+
+                                                                 "</div>"+
+                                                                 "</li>";
+            //}
+            
+            
+            
+            
+            
+            })
+            
+            message.addEventListener('change',function(){
+                
+                var request = new XMLHttpRequest();
+                
+                request.addEventListener('load',function(){
+                    console.log('Mesage sent!');
+                   // document.getElementById('text').innerHTML += 'Hola, soy yo';
+                })
+                
+                request.open('POST','http://localhost:8080/Practica/chat',true);
+                request.setRequestHeader("Content-type","application/x-www-form-urlencoded; charset=utf-8");
+                request.send("text="+message.value+"&user="+user.value+"&crear="+canal.value+"&grupo="+gr.value+"&Inte="+Int.value);
+            })
+            
+            
+            canal.addEventListener('change',function(){
+                if(canal.value){
+                    var request = new XMLHttpRequest();
+                
+                    request.addEventListener('load',function(){
+                        console.log('Intentando Guardar Grupos!');
+                       // document.getElementById('text').innerHTML += 'Hola, soy yo';
+                    })
+
+                    request.open('POST','http://localhost:8080/Practica/chat',true);
+                    request.setRequestHeader("Content-type","application/x-www-form-urlencoded; charset=utf-8");
+                    request.send("crear="+canal.value+"&grupo="+gr.value+"&Inte="+Int.value);
+                    document.getElementById("Nombre_Canal").value="";
+                }
+            })
+            
+            function Recortar(cadena){
+                var ej = ",";
+                //alert('Recibi: '+cadena);
+                var cadena3 = String(cadena);
+                
+                for(var i=0; i<cadena3.length; i++){
+                    if(cadena3[i]==ej){
+                        //alert('Devuelvo: '+cadena3.substr(0,i));
+                        return cadena3.substr(0,i);
+                    }
+                }
+                return cadena;
+            }
+
+            
+        </script>
+        
+
+    
+    </body>
+</html>
